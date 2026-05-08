@@ -656,7 +656,10 @@ def main() -> int:
     signal.signal(signal.SIGINT, handle_stop)
 
     if args.once:
-        daemon.reconcile(force=True)
+        try:
+            daemon.reconcile(force=True)
+        finally:
+            daemon.runner.stop()
         return 0
 
     daemon.run()
