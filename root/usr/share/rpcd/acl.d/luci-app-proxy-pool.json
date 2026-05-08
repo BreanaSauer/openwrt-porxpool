@@ -1,0 +1,46 @@
+{
+  "luci-app-proxy-pool": {
+    "description": "Grant access to Proxy Pool",
+    "read": {
+      "file": {
+        "/usr/bin/proxy-pool-ctl": [
+          "exec"
+        ],
+        "/overlay/share/IP.txt": [
+          "read"
+        ],
+        "/opt/proxy-pool/state.json": [
+          "read"
+        ],
+        "/opt/proxy-pool/config.json": [
+          "read"
+        ]
+      },
+      "ubus": {
+        "file": [
+          "exec",
+          "read"
+        ]
+      }
+    },
+    "write": {
+      "file": {
+        "/usr/bin/proxy-pool-ctl": [
+          "exec"
+        ],
+        "/overlay/share/IP.txt": [
+          "write"
+        ],
+        "/opt/proxy-pool/config.json": [
+          "write"
+        ]
+      },
+      "ubus": {
+        "file": [
+          "exec",
+          "write"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /usr/bin/python3 /opt/proxy-pool/proxy_pool_ctl.py "$@"

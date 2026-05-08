@@ -148,6 +148,22 @@ A LuCI panel can call these endpoints to implement:
 - View phone bindings.
 - Manual reload.
 
+## LuCI Panel
+
+The installer adds a LuCI entry:
+
+```text
+Services -> Proxy Pool
+```
+
+The panel can enable or disable the service, edit the endpoint port, upload or replace `IP.txt`, reload the pool, and view alive proxies and phone bindings.
+
+If the menu is not visible after installation, restart rpcd:
+
+```sh
+/etc/init.d/rpcd restart
+```
+
 ## Uninstall
 
 ```sh

@@ -126,6 +126,27 @@ sh install-openwrt.sh
 /etc/init.d/proxy-pool start
 ```
 
+刷新 LuCI 权限与菜单：
+
+```sh
+/etc/init.d/rpcd restart
+```
+
+然后在后台打开：
+
+```text
+服务 -> Proxy Pool
+```
+
+面板可以完成：
+
+- 启用 / 关闭
+- 修改手机统一代理端口
+- 上传或编辑 `IP.txt`
+- 手动刷新代理池
+- 查看可用代理
+- 查看手机 MAC 绑定
+
 查看服务状态：
 
 ```sh

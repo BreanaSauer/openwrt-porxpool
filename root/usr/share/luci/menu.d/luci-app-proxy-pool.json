@@ -1,0 +1,15 @@
+{
+  "admin/services/proxy-pool": {
+    "title": "Proxy Pool",
+    "order": 65,
+    "action": {
+      "type": "view",
+      "path": "proxy-pool/main"
+    },
+    "depends": {
+      "acl": [
+        "luci-app-proxy-pool"
+      ]
+    }
+  }
+}
