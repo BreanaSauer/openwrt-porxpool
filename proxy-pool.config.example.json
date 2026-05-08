@@ -1,0 +1,20 @@
+{
+  "enabled": true,
+  "ip_file": "/overlay/share/IP.txt",
+  "dhcp_leases": "/tmp/dhcp.leases",
+  "listen_addr": "0.0.0.0",
+  "listen_port": 10000,
+  "max_devices_per_proxy": 3,
+  "stale_device_days": 30,
+  "health_check_interval_sec": 300,
+  "reconcile_interval_sec": 30,
+  "socks_timeout_sec": 5,
+  "health_workers": 20,
+  "config_output": "/opt/proxy-pool/sing-box.json",
+  "bindings_file": "/opt/proxy-pool/bindings.json",
+  "state_file": "/opt/proxy-pool/state.json",
+  "sing_box_bin": "sing-box",
+  "sing_box_pid_file": "/var/run/proxy-pool-sing-box.pid",
+  "control_host": "127.0.0.1",
+  "control_port": 18080
+}

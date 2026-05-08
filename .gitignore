@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+config.json
+IP.txt
+port-map.csv
+bindings.json
+state.json
+sing-box.json
+*.log
+*.zip
+sing-box.exe
+update_config.exe
+temp_extract/
