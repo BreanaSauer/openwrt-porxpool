@@ -36,7 +36,7 @@ from typing import Any
 
 DEFAULT_CONFIG = {
     "enabled": True,
-    "ip_file": "/overlay/share/IP.txt",
+    "ip_file": "/opt/proxy-pool/IP.txt",
     "dhcp_leases": "/tmp/dhcp.leases",
     "listen_addr": "0.0.0.0",
     "listen_port": 10000,

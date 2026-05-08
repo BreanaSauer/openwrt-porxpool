@@ -9,6 +9,9 @@
         "/overlay/share/IP.txt": [
           "read"
         ],
+        "/opt/proxy-pool/IP.txt": [
+          "read"
+        ],
         "/opt/proxy-pool/state.json": [
           "read"
         ],
@@ -29,6 +32,9 @@
           "exec"
         ],
         "/overlay/share/IP.txt": [
+          "write"
+        ],
+        "/opt/proxy-pool/IP.txt": [
           "write"
         ],
         "/opt/proxy-pool/config.json": [

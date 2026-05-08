@@ -21,14 +21,19 @@ chmod +x /etc/init.d/proxy-pool
 mkdir -p /usr/share/luci/menu.d
 mkdir -p /usr/share/rpcd/acl.d
 mkdir -p /www/luci-static/resources/view/proxy-pool
+mkdir -p /www/luci-static/resources/proxy-pool
 cp "$SRC_DIR/root/usr/share/luci/menu.d/luci-app-proxy-pool.json" /usr/share/luci/menu.d/luci-app-proxy-pool.json
 cp "$SRC_DIR/root/usr/share/rpcd/acl.d/luci-app-proxy-pool.json" /usr/share/rpcd/acl.d/luci-app-proxy-pool.json
 cp "$SRC_DIR/root/www/luci-static/resources/view/proxy-pool/main.js" /www/luci-static/resources/view/proxy-pool/main.js
+cp "$SRC_DIR/root/www/luci-static/resources/proxy-pool/logo.png" /www/luci-static/resources/proxy-pool/logo.png
 rm -rf /tmp/luci-indexcache /tmp/luci-modulecache
 /etc/init.d/rpcd restart 2>/dev/null || true
 
 if [ ! -f /overlay/share/IP.txt ]; then
   touch /overlay/share/IP.txt
+fi
+if [ ! -f "$BASE/IP.txt" ]; then
+  touch "$BASE/IP.txt"
 fi
 
 echo "Installed to $BASE"
