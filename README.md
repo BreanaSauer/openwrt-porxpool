@@ -22,7 +22,7 @@ Python is only the control plane. `sing-box` handles all real traffic.
 - Keeps persistent `MAC -> upstream proxy` bindings.
 - Limits devices per upstream proxy, default `3`.
 - Generates sing-box config using `source_ip_cidr` rules.
-- Local control API for future LuCI panel integration.
+- Local control API and LuCI panel for runtime control.
 - Does not modify OpenClash, DHCP, Wi-Fi, Samba, or default routing.
 
 ## OpenWrt/KWRT Layout
@@ -156,7 +156,9 @@ The installer adds a LuCI entry:
 Services -> Proxy Pool
 ```
 
-The panel can enable or disable the service, edit the endpoint port, upload or replace `IP.txt`, reload the pool, and view alive proxies and phone bindings.
+The panel can enable or disable forwarding, edit the endpoint port, upload or replace `IP.txt`, reload the pool, and view daemon status, sing-box forwarding status, alive proxies, phone bindings, and IP file line counts.
+
+`Stopped` in the panel does not always mean the daemon failed. If `Daemon` is online but the forwarding engine is stopped with `no alive proxies`, the service is waiting for valid upstream proxies in `IP.txt`.
 
 If the menu is not visible after installation, restart rpcd:
 

@@ -209,6 +209,23 @@ def read_ip_file(path: Path) -> tuple[list[UpstreamProxy], list[str]]:
     return proxies, warnings
 
 
+def ip_file_stats(path: Path) -> dict[str, int | bool]:
+    stats: dict[str, int | bool] = {
+        "exists": path.exists(),
+        "total_lines": 0,
+        "data_lines": 0,
+    }
+    if not path.exists():
+        return stats
+
+    for raw in path.read_text(encoding="utf-8", errors="ignore").splitlines():
+        stats["total_lines"] = int(stats["total_lines"]) + 1
+        line = raw.strip()
+        if line and not line.startswith("#"):
+            stats["data_lines"] = int(stats["data_lines"]) + 1
+    return stats
+
+
 def check_socks(proxy: UpstreamProxy, timeout: int) -> UpstreamProxy:
     start = time.time()
     try:
@@ -436,10 +453,12 @@ class ProxyPoolDaemon:
         advertised_host = select_advertised_host(self.settings, lan_ips)
         state = {
             "updated_at": now_iso(),
+            "daemon_running": True,
             "enabled": bool(self.settings["enabled"]),
             "listen": f"{self.settings['listen_addr']}:{self.settings['listen_port']}",
             "advertised_proxy": f"{advertised_host}:{self.settings['listen_port']}" if advertised_host else "",
             "lan_ips": lan_ips,
+            "ip_file": ip_file_stats(Path(self.settings["ip_file"])),
             "settings": self.public_settings(),
             **extra,
         }
