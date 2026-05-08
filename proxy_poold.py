@@ -54,6 +54,8 @@ DEFAULT_CONFIG = {
     "control_host": "127.0.0.1",
     "control_port": 18080,
     "lan_interface": "br-lan",
+    "advertised_host": "",
+    "preferred_lan_prefix": "192.168.31.",
 }
 
 
@@ -112,6 +114,20 @@ def get_lan_ips(interface: str) -> list[str]:
         if ips:
             break
     return ips
+
+
+def select_advertised_host(settings: dict[str, Any], lan_ips: list[str]) -> str:
+    configured = str(settings.get("advertised_host", "")).strip()
+    if configured:
+        return configured
+
+    preferred_prefix = str(settings.get("preferred_lan_prefix", "")).strip()
+    if preferred_prefix:
+        for ip in lan_ips:
+            if ip.startswith(preferred_prefix):
+                return ip
+
+    return lan_ips[0] if lan_ips else ""
 
 
 def parse_date(value: str) -> date | None:
@@ -408,6 +424,8 @@ class ProxyPoolDaemon:
         self.config_output = Path(settings["config_output"])
         self.runner = SingBoxRunner(settings)
         self.stop_event = threading.Event()
+        self.api_ready = threading.Event()
+        self.api_error: Exception | None = None
         self.lock = threading.Lock()
         self.last_config_hash = ""
         self.last_health_at = 0.0
@@ -415,7 +433,7 @@ class ProxyPoolDaemon:
 
     def write_state(self, extra: dict[str, Any]) -> None:
         lan_ips = get_lan_ips(str(self.settings.get("lan_interface", "br-lan")))
-        advertised_host = lan_ips[0] if lan_ips else ""
+        advertised_host = select_advertised_host(self.settings, lan_ips)
         state = {
             "updated_at": now_iso(),
             "enabled": bool(self.settings["enabled"]),
@@ -443,6 +461,8 @@ class ProxyPoolDaemon:
             "control_host",
             "control_port",
             "lan_interface",
+            "advertised_host",
+            "preferred_lan_prefix",
         ]
         return {key: self.settings.get(key) for key in visible_keys}
 
@@ -463,6 +483,8 @@ class ProxyPoolDaemon:
             "socks_timeout_sec": int,
             "health_workers": int,
             "lan_interface": str,
+            "advertised_host": str,
+            "preferred_lan_prefix": str,
         }
         for key, caster in allowed.items():
             if key not in patch:
@@ -613,14 +635,24 @@ class ProxyPoolDaemon:
         class ReusableTCPServer(socketserver.ThreadingTCPServer):
             allow_reuse_address = True
 
-        with ReusableTCPServer((host, port), Handler) as httpd:
-            httpd.timeout = 1
-            while not self.stop_event.is_set():
-                httpd.handle_request()
+        try:
+            with ReusableTCPServer((host, port), Handler) as httpd:
+                self.api_ready.set()
+                httpd.timeout = 1
+                while not self.stop_event.is_set():
+                    httpd.handle_request()
+        except OSError as exc:
+            self.api_error = exc
+            self.stop_event.set()
+            self.write_state({"running": False, "reason": f"control api bind failed: {exc}"})
 
     def run(self) -> None:
         thread = threading.Thread(target=self.serve_control_api, daemon=True)
         thread.start()
+        if not self.api_ready.wait(timeout=5):
+            if self.api_error:
+                raise RuntimeError(f"control api failed to start: {self.api_error}")
+            raise RuntimeError("control api failed to start")
         self.reconcile(force=True)
         while not self.stop_event.wait(int(self.settings["reconcile_interval_sec"])):
             self.reconcile()

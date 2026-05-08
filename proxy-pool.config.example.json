@@ -16,5 +16,8 @@
   "sing_box_bin": "sing-box",
   "sing_box_pid_file": "/var/run/proxy-pool-sing-box.pid",
   "control_host": "127.0.0.1",
-  "control_port": 18080
+  "control_port": 18080,
+  "lan_interface": "br-lan",
+  "advertised_host": "",
+  "preferred_lan_prefix": "192.168.31."
 }

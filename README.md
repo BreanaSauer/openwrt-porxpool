@@ -103,11 +103,14 @@ Important fields:
   "listen_port": 10000,
   "max_devices_per_proxy": 3,
   "ip_file": "/overlay/share/IP.txt",
-  "lan_interface": "br-lan"
+  "lan_interface": "br-lan",
+  "advertised_host": "",
+  "preferred_lan_prefix": "192.168.31."
 }
 ```
 
 `listen_addr` defaults to `0.0.0.0` so phones on LAN can connect. The panel/status display should show the router LAN IP plus `listen_port`, such as `192.168.31.2:10000`.
+If your router has multiple LAN addresses, set `advertised_host` to the address phones should use.
 
 Change settings through the local API helper:
 

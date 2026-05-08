@@ -268,7 +268,9 @@ python3 /opt/proxy-pool/proxy_pool_ctl.py set max_devices_per_proxy=3
   "stale_device_days": 30,
   "health_check_interval_sec": 300,
   "reconcile_interval_sec": 30,
-  "lan_interface": "br-lan"
+  "lan_interface": "br-lan",
+  "advertised_host": "",
+  "preferred_lan_prefix": "192.168.31."
 }
 ```
 
@@ -280,6 +282,8 @@ python3 /opt/proxy-pool/proxy_pool_ctl.py set max_devices_per_proxy=3
 - `stale_device_days`: 手机多久没出现后释放绑定
 - `health_check_interval_sec`: 代理可用性检测间隔
 - `lan_interface`: 用于自动识别软路由 LAN IP，常见为 `br-lan`
+- `advertised_host`: 手动指定手机应填写的软路由 IP，例如 `192.168.31.2`
+- `preferred_lan_prefix`: 多个 LAN IP 时优先展示的网段前缀
 
 ## 10. 验证是否工作
 
@@ -465,4 +469,3 @@ DNS
 ```
 
 该手机流量才会进入代理池。
-
