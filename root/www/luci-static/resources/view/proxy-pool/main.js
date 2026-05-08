@@ -103,6 +103,130 @@ function renderWarnings(warnings) {
   ]);
 }
 
+function parseIpRows(text) {
+  var rows = [];
+  var lines = String(text || '').split(/\r?\n/);
+  var today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  lines.forEach(function(raw, index) {
+    var line = raw.trim();
+    var row = {
+      index: index,
+      line_no: index + 1,
+      raw: raw,
+      ip: '',
+      port: '',
+      username: '',
+      password: '',
+      expire: '',
+      status: '',
+      valid: false
+    };
+
+    if (!line)
+      return;
+
+    if (line.charAt(0) === '#') {
+      row.status = '\u6ce8\u91ca';
+      rows.push(row);
+      return;
+    }
+
+    var parts = line.split('|');
+    if (parts.length < 4) {
+      row.status = '\u683c\u5f0f\u9519\u8bef';
+      rows.push(row);
+      return;
+    }
+
+    row.ip = (parts[0] || '').trim();
+    row.port = (parts[1] || '').trim();
+    row.username = (parts[2] || '').trim();
+    row.password = (parts[3] || '').trim();
+    row.expire = (parts[4] || '').trim();
+    row.valid = !!row.ip && !!row.port && !!row.username && !!row.password;
+    row.status = row.valid ? '\u6709\u6548' : '\u53c2\u6570\u7f3a\u5931';
+
+    if (row.valid && !/^\d+$/.test(row.port)) {
+      row.valid = false;
+      row.status = '\u7aef\u53e3\u9519\u8bef';
+    }
+
+    if (row.valid && row.expire) {
+      var match = row.expire.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (match) {
+        var expireDate = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+        if (expireDate < today) {
+          row.valid = false;
+          row.status = '\u5df2\u8fc7\u671f';
+        }
+      }
+    }
+
+    rows.push(row);
+  });
+
+  return rows;
+}
+
+function renderIpRows(rows, onDelete) {
+  var validCount = 0;
+  var invalidCount = 0;
+
+  rows.forEach(function(row) {
+    if (row.valid)
+      validCount++;
+    else if (row.status !== '\u6ce8\u91ca')
+      invalidCount++;
+  });
+
+  if (!rows.length)
+    return E('div', {}, [
+      E('p', {}, ['\u5df2\u89e3\u6790: 0 \u6761']),
+      E('em', {}, ['IP.txt \u6682\u65e0\u5185\u5bb9'])
+    ]);
+
+  return E('div', {}, [
+    E('p', {}, [
+      '\u5df2\u89e3\u6790: ' + rows.length + ' \u884c / ' +
+      '\u6709\u6548 ' + validCount + ' \u6761 / ' +
+      '\u9700\u68c0\u67e5 ' + invalidCount + ' \u6761'
+    ]),
+    E('table', { 'class': 'table' }, [
+      E('tr', {}, [
+        E('th', {}, ['#']),
+        E('th', {}, ['IP']),
+        E('th', {}, ['\u7aef\u53e3']),
+        E('th', {}, ['\u8d26\u53f7']),
+        E('th', {}, ['\u5bc6\u7801']),
+        E('th', {}, ['\u5230\u671f\u65f6\u95f4']),
+        E('th', {}, ['\u72b6\u6001']),
+        E('th', {}, ['\u64cd\u4f5c'])
+      ]),
+      rows.map(function(row) {
+        return E('tr', {}, [
+          E('td', {}, [String(row.line_no)]),
+          E('td', {}, [row.ip || row.raw || '-']),
+          E('td', {}, [row.port || '-']),
+          E('td', {}, [row.username || '-']),
+          E('td', {}, [row.password ? '******' : '-']),
+          E('td', {}, [row.expire || '-']),
+          E('td', {}, [badge(row.status || '-', row.valid || row.status === '\u6ce8\u91ca')]),
+          E('td', {}, [
+            E('button', {
+              'class': 'btn cbi-button cbi-button-remove',
+              'click': function() {
+                onDelete(row.index);
+              }
+            }, ['\u5220\u9664'])
+          ])
+        ]);
+      })
+    ])
+  ]);
+}
+
 return view.extend({
   load: function() {
     return Promise.all([
@@ -120,6 +244,26 @@ return view.extend({
     var daemonOnline = !!status.daemon_running || Object.keys(status).length > 0;
     var engineRunning = !!status.running;
     var ipFile = status.ip_file || {};
+    var ipTableBox = E('div', { 'id': 'pp-iptable', 'style': 'margin-top:12px;overflow-x:auto;' });
+
+    function redrawIpTable() {
+      var node = document.getElementById('pp-iptable');
+      if (!node)
+        return;
+
+      while (node.firstChild)
+        node.removeChild(node.firstChild);
+
+      node.appendChild(renderIpRows(parseIpRows(document.getElementById('pp-iptxt').value), deleteIpLine));
+    }
+
+    function deleteIpLine(index) {
+      var input = document.getElementById('pp-iptxt');
+      var lines = input.value.split(/\r?\n/);
+      lines.splice(index, 1);
+      input.value = lines.join('\n');
+      redrawIpTable();
+    }
 
     var enabledInput = E('input', {
       'type': 'checkbox',
@@ -155,7 +299,8 @@ return view.extend({
     var textArea = E('textarea', {
       'class': 'cbi-input-textarea',
       'id': 'pp-iptxt',
-      'style': 'width:100%; min-height:220px; font-family:monospace;'
+      'style': 'width:100%; min-height:220px; font-family:monospace;',
+      'input': redrawIpTable
     }, [ipText]);
 
     function saveSettings() {
@@ -201,6 +346,8 @@ return view.extend({
         return location.reload();
       });
     }
+
+    ipTableBox.appendChild(renderIpRows(parseIpRows(ipText), deleteIpLine));
 
     return E('div', { 'class': 'cbi-map' }, [
       E('h2', {}, ['Proxy Pool']),
@@ -272,6 +419,7 @@ return view.extend({
         E('h3', {}, ['\u4ee3\u7406\u6c60 IP.txt']),
         textArea,
         E('p', {}, ['\u683c\u5f0f: ip|port|username|password|expire_date']),
+        ipTableBox,
         E('button', {
           'class': 'btn cbi-button cbi-button-save',
           'click': ui.createHandlerFn(this, saveIpText)

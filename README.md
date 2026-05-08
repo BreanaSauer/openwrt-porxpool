@@ -156,7 +156,7 @@ The installer adds a LuCI entry:
 Services -> Proxy Pool
 ```
 
-The panel can enable or disable forwarding, edit the endpoint port, upload or replace `IP.txt`, reload the pool, and view daemon status, sing-box forwarding status, alive proxies, phone bindings, and IP file line counts.
+The panel can enable or disable forwarding, edit the endpoint port, upload or replace `IP.txt`, parse imported proxy lines into a management table, delete unwanted proxy lines before saving, reload the pool, and view daemon status, sing-box forwarding status, alive proxies, phone bindings, and IP file line counts.
 
 `Stopped` in the panel does not always mean the daemon failed. If `Daemon` is online but the forwarding engine is stopped with `no alive proxies`, the service is waiting for valid upstream proxies in `IP.txt`.
 
